@@ -49,14 +49,20 @@ class NeuralNetwork:
 				return z
 			else:
 				return 0
+		if activation == 'sigmoid':
+			return (1/(1+np.e** -z))
 
 
 	def forward_propogate(self,data):
-
+		new = {}
+		new['z'] = []
+		new['h'] = []
 		for i in len(self.Nodes-1):
 			#new z value calculated by multiplying node weights and adding bias 
-			newz = np.matmul(self.parameter_dict[i][1],self.parameter_dict[i+1][0][1:,1:]) + self.parameter_dict[i][0][0][0]
-			newh = activate(newz,self.Activations[i])
+			new['z'].append(np.matmul(self.parameter_dict[i][1],self.parameter_dict[i+1][0][1:,1:]) + self.parameter_dict[i][0][0][0])
+			new['h'].append(activate(newz,self.Activations[i]))
+		return new
+
 
 
 			
