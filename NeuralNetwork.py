@@ -22,6 +22,7 @@ class NeuralNetwork:
 		self.Layers = len(Nodes) - 2
 		self.Nodes = Nodes
 		self.Activations = Activations
+		self.parameter_dict ={}
 
 	def initialize_net(self):
 		'''
@@ -30,16 +31,34 @@ class NeuralNetwork:
 		'''
 		parameter_dict = {k: [] for k in range(len(self.Nodes))}
 		for i in range(1,len(self.Nodes)):
-			h = np.random.randn(self.Nodes[i]+1)
-
-			w = np.random.randn(self.Nodes[i-1],self.Nodes[i])
+			h = np.random.randn(self.Nodes[i])
+			bias = 1
+			w = np.random.randn((self.Nodes[i-1]+1),(self.Nodes[i]+1))
 			z = np.zeros(self.Nodes[i]+1)
 			delta = np.random.randn(self.Nodes[i]+1)
 
 			activation = self.Activations[i-1]
 
-			parameter_dict[i] = [h,w,z,delta,activation]
+			parameter_dict[i] = [w,h,z,delta,activation]
 		parameter_dict['y_hat'] = np.random.randint(100000,size =1)[0]
+		self.parameter_dict = parameter_dict
 		return parameter_dict
+	def activate(z,activation ='relu'):
+		if activation =='relu':
+			if z > 0:
+				return z
+			else:
+				return 0
+
+
+	def forward_propogate(self,data):
+
+		for i in len(self.Nodes-1):
+			#new z value calculated by multiplying node weights and adding bias 
+			newz = np.matmul(self.parameter_dict[i][1],self.parameter_dict[i+1][0][1:,1:]) + self.parameter_dict[i][0][0][0]
+			newh = activate(newz,self.Activations[i])
+
+
+			
 
 
