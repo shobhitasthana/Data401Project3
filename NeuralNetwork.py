@@ -66,8 +66,19 @@ class NeuralNetwork:
         new = {}
         new['z'] = []
         new['h'] = []
-        for i in len(self.Nodes-1):
+        self.parameter_dict[0]['h'] =np.append(1,data)
+        for i in range(1,len(self.Nodes)-1):
             #new z value calculated by multiplying node weights and adding bias 
-            new['z'].append(np.matmul(self.parameter_dict[i][1],self.parameter_dict[i+1][0][1:,1:]) + self.parameter_dict[i][0][0][0])
-            new['h'].append(activate(newz,self.Activations[i]))
-        return new
+            newz = np.matmul(self.parameter_dict[i-1]['h'],self.parameter_dict[i]['w'])
+            newh = np.matrix(np.apply_along_axis(self.activate,0,newz))
+            self.parameter_dict[i]['z'] = newz
+            self.parameter_dict[i]['h'] = np.append(1,newh)
+            print('z',newz, 'h',newh )
+
+        self.parameter_dict['y_hat'] = np.matmul(self.parameter_dict[len(self.Nodes)-2]['h'],self.parameter_dict[len(self.Nodes)-1]['w'].transpose())
+
+        return self.parameter_dict['y_hat']
+
+
+
+
