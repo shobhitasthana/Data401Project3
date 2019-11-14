@@ -2,7 +2,7 @@ def calculate_deltas(self,true):
     """
     true: the value of the true y-value
     assumes that all the entries in the dictionary are np.array where applicable
-    assumes weights matrix appears as j being constant across rows and i across cols
+    assumes weights matrix for w_ij appears as j being constant across rows and i across cols
     e.g. [[w11,w21],[w12,w22]] 
     """
     # calculate sum of dervatives of cost
