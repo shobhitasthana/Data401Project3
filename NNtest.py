@@ -13,4 +13,4 @@ net.parameter_dict[3]['w'] = np.matrix([0,5.,2])
 
 print(net.forward_propogate(data))
 
-print(net.parameter_dict)
+net.calculate_deltas2(2.3)
