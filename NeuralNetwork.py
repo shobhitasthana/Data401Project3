@@ -23,13 +23,14 @@ class NeuralNetwork:
         self.Nodes = Nodes
         self.Activations = Activations
         self.parameter_dict ={}
-        self.rate = 0.1
+        self.rate = 0.001
 
     def initialize_net(self):
         '''
         parameter dict format:
         layer: {w,h,z,delta, activation}
         '''
+<<<<<<< HEAD
         parameter_dict = {k: {'w':0, 'h':0, 'z':0, 'bias':0, 'delta':0, 'activation':0, 'gradient':0} for k in range(len(self.Nodes))}
         for i in range(0,(len(self.Nodes)-1)):
 
@@ -47,9 +48,27 @@ class NeuralNetwork:
             bias = np.matrix(np.random.randn(self.Nodes[i]))
             delta = np.matrix(np.random.randn(self.Nodes[i]))
             gradient = np.matrix(np.zeros((self.Nodes[i-1],self.Nodes[i])))
+=======
+        parameter_dict = {k: {'w':0, 'h':0, 'z':0, 'bias':0,
+                              'delta':0, 'activation':0, 'gradient':0, 'g_bias':0} 
+                          for k in range(len(self.Nodes))}
+        
+        for i in range(1,len(self.Nodes)):
+            
+            h = np.matrix(np.random.randn(self.Nodes[i]), dtype='float32')
+            w = np.matrix(np.random.randn((self.Nodes[i-1]),(self.Nodes[i])), dtype='float32')
+            z = np.matrix(np.zeros(self.Nodes[i]), dtype='float32')
+            bias = np.matrix(np.random.randn(self.Nodes[i]), dtype='float32')
+            delta = np.matrix(np.random.randn(self.Nodes[i]), dtype='float32')
+            gradient = np.matrix(np.zeros((self.Nodes[i-1],self.Nodes[i])), dtype='float32')
+            g_bias = np.matrix(np.zeros(self.Nodes[i]), dtype='float32')
+>>>>>>> 88de399a0555f046f1535b08fa0f02fe64d3722e
             activation = self.Activations[i-1]
 
-            parameter_dict[i] = {'w':w, 'h':h, 'z':z, 'bias':bias, 'delta':delta, 'activation':activation, 'gradient':gradient}
+            parameter_dict[i] = {'w':w, 'h':h, 'z':z, 'bias':bias, 
+                                 'delta':delta, 'activation':activation, 
+                                 'gradient':gradient, 'g_bias':g_bias}
+            
         parameter_dict['y_hat'] = np.random.randint(100000,size =1)[0]
         self.parameter_dict = parameter_dict
         #print(self.parameter_dict)
@@ -82,11 +101,16 @@ class NeuralNetwork:
             newh = np.matrix(np.apply_along_axis(self.activate,0,newz))
             self.parameter_dict[i]['z'] = newz
             self.parameter_dict[i]['h'] = newh
+<<<<<<< HEAD
             #print('z',newz, 'h',newh )
         #print(np.asscalar(np.matmul(self.parameter_dict[len(self.Nodes)-2]['h'],self.parameter_dict[len(self.Nodes)-1]['w'].transpose())))
         print(self.parameter_dict)
         self.parameter_dict['y_hat'] = np.asscalar(np.matmul(self.parameter_dict[len(self.Nodes)-2]['h'],self.parameter_dict[len(self.Nodes)-1]['w']))
         print('forward_prop done',seld.parameter_dict)
+=======
+        self.parameter_dict['y_hat'] = np.asscalar(np.matmul(self.parameter_dict[len(self.Nodes)-2]['h'],
+                                                             self.parameter_dict[len(self.Nodes)-1]['w']))
+>>>>>>> 88de399a0555f046f1535b08fa0f02fe64d3722e
 
         return self.parameter_dict['y_hat']
 
@@ -102,38 +126,9 @@ class NeuralNetwork:
         # last layer d (indexing is correct?)
         # get Zs from the last layer as well
         # error * g'(z)
-        self.parameter_dict[len(self.Nodes) - 1]["delta"] = error * np.array([self.activate_prime(x) for 
-                                                               x in self.parameter_dict[len(self.Nodes) - 1]["z"]])
-        # last layer is special case, now loop through all the previous layers to calculate sets of deltas
-        # from the second to last layer to the first layer – backwards
-        for i in range(len(self.Nodes) - 2,-1,-1):
-            # delta = weights.T x diag(g'(z)) x delta[i+1]
-            # extra Ts are just making things into column vectors
-            g_prime_layer = np.array([self.activate_prime(x) for x in self.parameter_dict[i]["z"]]).T
-            self.parameter_dict[i]["delta"] = self.parameter_dict[i]["w"].T.dot(
-                np.diag(g_prime_layer)).dot(self.parameter_dict[i + 1]["delta"].T)
-
-    def calculate_deltas2(self,true):
-        """
-        true: the value of the true y-value
-        assumes that all the entries in the dictionary are np.array where applicable
-        assumes weights matrix for w_ij appears as j being constant across rows and i across cols
-        e.g. [[w11,w21],[w12,w22]] 
-        """
-        # calculate sum of dervatives of cost
-        error = self.parameter_dict["y_hat"] - true
-        # last layer d (indexing is correct?)
-        # get Zs from the last layer as well
-        # error * g'(z)
         self.parameter_dict[len(self.Nodes) - 1]["delta"] = np.matrix(error)
-        #print(self.parameter_dict[len(self.Nodes) - 1]["delta"])
         # last layer is special case, now loop through all the previous layers to calculate sets of deltas
         # from the second to last layer to the first layer – backwards
-        
-#         w3 = net.parameter_dict[3]['w']
-#         z2 = net.parameter_dict[2]['z']
-#         d3 = net.parameter_dict[3]['delta']
-#         net.parameter_dict[2]['delta'] = np.dot(d3,np.dot(w3, np.diag(np.apply_along_axis(net.activate_prime, 0, z2))))
 
         for i in range(len(self.Nodes) - 2,0,-1):
             # delta = weights.T x diag(g'(z)) x delta[i+1]
@@ -141,21 +136,14 @@ class NeuralNetwork:
             # add the intercept into g_prime
             #print(i)
             g_prime_layer = np.apply_along_axis(self.activate_prime,0,self.parameter_dict[i]["z"])
-            #print(np.matrix(np.diag(g_prime_layer)))
-            #print(np.matmul(np.matmul(self.parameter_dict[i]["w"],np.matrix(np.diag(g_prime_layer))),self.parameter_dict[i + 1]["delta"].T))
-            #print(self.parameter_dict[i + 1]["delta"].shape)
 
-            
-            #print(np.matmul(self.parameter_dict[i + 1]["w"].T,np.matrix(np.diag(g_prime_layer))))
-            self.parameter_dict[i]["delta"] = np.matmul(self.parameter_dict[i + 1]["delta"],np.matmul(self.parameter_dict[i + 1]["w"].T,np.matrix(np.diag(g_prime_layer))))
-            '''
-            self.parameter_dict[i]["delta"] = np.matmul(self.parameter_dict[i]["w"],np.diag(g_prime_layer))
-            self.parameter_dict[i]["w"].T.dot(
-                np.diag(g_prime_layer)).dot(self.parameter_dict[i + 1]["delta"])
-            '''
-            
+            self.parameter_dict[i]["delta"] = np.matmul(self.parameter_dict[i + 1]["delta"],
+                                                        np.matmul(self.parameter_dict[i + 1]["w"].T,
+                                                                  np.matrix(np.diag(g_prime_layer))))
+         
     def update_gradient(self):
         for l in range(len(self.Nodes) - 1, 0, -1):
+<<<<<<< HEAD
             print(self.parameter_dict)
             self.parameter_dict[l]['gradient'] += self.rate * np.dot(self.parameter_dict[l - 1]['h'].T, self.parameter_dict[l]['delta'])
     
@@ -208,4 +196,36 @@ class NeuralNetwork:
 
 
 
+=======
+            self.parameter_dict[l]['g_bias'] += self.parameter_dict[l]['delta']
+            self.parameter_dict[l]['gradient'] += np.dot(self.parameter_dict[l - 1]['h'].T, 
+                                                                     self.parameter_dict[l]['delta'])
+>>>>>>> 88de399a0555f046f1535b08fa0f02fe64d3722e
 
+    def walk_gradient(self):
+        for l in range(len(self.Nodes) - 1, 0, -1):
+            self.parameter_dict[l]['bias'] -= self.rate * self.parameter_dict[l]['g_bias']
+            self.parameter_dict[l]['g_bias'] = 0 * self.parameter_dict[l]['g_bias']
+            
+            self.parameter_dict[l]['w'] -= self.rate * self.parameter_dict[l]['gradient']
+            self.parameter_dict[l]['gradient'] = 0 * self.parameter_dict[l]['gradient']
+            
+    def train(self,data,y,batch_size = 100, epochs = 8):
+
+        self.initialize_net()
+        for i in range(epochs * len(data)):
+            idx = i % len(data)
+            
+            if i % batch_size == 0 and i != 0:
+                self.walk_gradient()
+                
+            self.forward_propogate(data[idx,:])
+            self.calculate_deltas(y[idx])
+            self.update_gradient()
+    
+    def predict(self, test_data):
+        preds = []
+        for i in range(len(test_data)):
+            self.forward_propogate(test_data[i])
+            preds.append(self.parameter_dict['y_hat'])
+        return preds
