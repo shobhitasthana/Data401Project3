@@ -45,6 +45,17 @@ class TestNN(unittest.TestCase):
         self.assertTrue((d[3]['gradient'] == [[0],[2]]).all())
         self.assertTrue((d[2]['gradient'] == [[0,1],[0,0]]).all())
         self.assertTrue((d[1]['gradient'] == [[4,0],[-8,0],[8,0]]).all())
+
+    def test_update_weights_self(self):
+        self.net.forward_propogate([1,-2,2])
+        print(self.net.parameter_dict)
+        self.net.calculate_deltas2(3)
+        self.net.update_gradient()
+        self.net.update_weights()
+
+        print(self.net.parameter_dict)
+        return
+        
         
 if __name__ == "__main__":
     unittest.main()
