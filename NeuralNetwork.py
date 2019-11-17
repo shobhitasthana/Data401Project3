@@ -30,39 +30,20 @@ class NeuralNetwork:
         parameter dict format:
         layer: {w,h,z,delta, activation}
         '''
-<<<<<<< HEAD
-        parameter_dict = {k: {'w':0, 'h':0, 'z':0, 'bias':0, 'delta':0, 'activation':0, 'gradient':0} for k in range(len(self.Nodes))}
-        for i in range(0,(len(self.Nodes)-1)):
-
-            # add the intercept
-#             h = np.matrix(np.append(1,np.random.randn(self.Nodes[i])))
-#             w = np.matrix(np.random.randn((self.Nodes[i-1]+1),(self.Nodes[i]+1)))
-#             z = np.matrix(np.zeros(self.Nodes[i]+1))
-#             delta = np.matrix(np.random.randn(self.Nodes[i]+1))
-#             gradient = np.matrix(np.zeros((self.Nodes[i-1]+1,self.Nodes[i]+1)))
-            
-            h = np.matrix(np.random.randn(self.Nodes[i]))
-            print(h.shape)
-            w = np.matrix(np.random.randn((self.Nodes[i-1]),(self.Nodes[i])))
-            z = np.matrix(np.zeros(self.Nodes[i]))
-            bias = np.matrix(np.random.randn(self.Nodes[i]))
-            delta = np.matrix(np.random.randn(self.Nodes[i]))
-            gradient = np.matrix(np.zeros((self.Nodes[i-1],self.Nodes[i])))
-=======
         parameter_dict = {k: {'w':0, 'h':0, 'z':0, 'bias':0,
                               'delta':0, 'activation':0, 'gradient':0, 'g_bias':0} 
                           for k in range(len(self.Nodes))}
         
         for i in range(1,len(self.Nodes)):
             
-            h = np.matrix(np.random.randn(self.Nodes[i]), dtype='float32')
-            w = np.matrix(np.random.randn((self.Nodes[i-1]),(self.Nodes[i])), dtype='float32')
-            z = np.matrix(np.zeros(self.Nodes[i]), dtype='float32')
-            bias = np.matrix(np.random.randn(self.Nodes[i]), dtype='float32')
-            delta = np.matrix(np.random.randn(self.Nodes[i]), dtype='float32')
-            gradient = np.matrix(np.zeros((self.Nodes[i-1],self.Nodes[i])), dtype='float32')
-            g_bias = np.matrix(np.zeros(self.Nodes[i]), dtype='float32')
->>>>>>> 88de399a0555f046f1535b08fa0f02fe64d3722e
+            h = np.matrix(np.random.randn(self.Nodes[i]), dtype='float64')
+            w = np.matrix(np.random.randn((self.Nodes[i-1]),(self.Nodes[i])), dtype='float64')
+            z = np.matrix(np.zeros(self.Nodes[i]), dtype='float64')
+            bias = np.matrix(np.random.randn(self.Nodes[i]), dtype='float64')
+            delta = np.matrix(np.random.randn(self.Nodes[i]), dtype='float64')
+            gradient = np.matrix(np.zeros((self.Nodes[i-1],self.Nodes[i])), dtype='float64')
+            g_bias = np.matrix(np.zeros(self.Nodes[i]), dtype='float64')
+
             activation = self.Activations[i-1]
 
             parameter_dict[i] = {'w':w, 'h':h, 'z':z, 'bias':bias, 
@@ -90,27 +71,16 @@ class NeuralNetwork:
             return 0
         
     def forward_propogate(self,data):
-        #print(self.parameter_dict)
-        self.parameter_dict[0]['h'] = np.matrix(np.append(1,data))
-        for i in range(1,len(self.Nodes)-2):
+        self.parameter_dict[0]['h'] = np.matrix(data)
+        for i in range(1,len(self.Nodes)-1):
             #new z value calculated by multiplying node weights and adding bias 
-            print('h shape for layer i-1',self.parameter_dict[i-1]['h'].astype('float64').shape ,'w shape for layer i', self.parameter_dict[i]['w'].shape, 'bias shape for layer i',self.parameter_dict[i]['bias'].shape)
-
-            #print('final_shape:',np.matrix(np.matmul(self.parameter_dict[i-1]['h'],self.parameter_dict[i]['w'])) + self.parameter_dict[i]['bias'])
             newz = np.matrix(np.matmul(self.parameter_dict[i-1]['h'],self.parameter_dict[i]['w'])) + self.parameter_dict[i]['bias']
             newh = np.matrix(np.apply_along_axis(self.activate,0,newz))
             self.parameter_dict[i]['z'] = newz
             self.parameter_dict[i]['h'] = newh
-<<<<<<< HEAD
-            #print('z',newz, 'h',newh )
-        #print(np.asscalar(np.matmul(self.parameter_dict[len(self.Nodes)-2]['h'],self.parameter_dict[len(self.Nodes)-1]['w'].transpose())))
-        print(self.parameter_dict)
-        self.parameter_dict['y_hat'] = np.asscalar(np.matmul(self.parameter_dict[len(self.Nodes)-2]['h'],self.parameter_dict[len(self.Nodes)-1]['w']))
-        print('forward_prop done',seld.parameter_dict)
-=======
         self.parameter_dict['y_hat'] = np.asscalar(np.matmul(self.parameter_dict[len(self.Nodes)-2]['h'],
                                                              self.parameter_dict[len(self.Nodes)-1]['w']))
->>>>>>> 88de399a0555f046f1535b08fa0f02fe64d3722e
+
 
         return self.parameter_dict['y_hat']
 
@@ -143,71 +113,16 @@ class NeuralNetwork:
          
     def update_gradient(self):
         for l in range(len(self.Nodes) - 1, 0, -1):
-<<<<<<< HEAD
-            print(self.parameter_dict)
-            self.parameter_dict[l]['gradient'] += self.rate * np.dot(self.parameter_dict[l - 1]['h'].T, self.parameter_dict[l]['delta'])
-    
-
-    def update_weights(self):
-
-        for i in range(len(self.Nodes) - 1, 0, -1):
-            self.parameter_dict[i]['w'] = self.parameter_dict[i]['w'] - self.parameter_dict[i]['gradient']
-
-
-
-    def train(self,data,labels,batch_size = 100, epochs = 8):
-
-        self.initialize_net()
-        weights = []
-        for i in range(1,epochs):
-            self.forward_propogate(data[np.random.randint(len(data)-1),:])
-            #random data point to set weights to
-            count = 0
-
-            while count < len(data):
-                print(self.parameter_dict)
-                if count + batch_size > len(data):
-                    break
-                for j in range(1,batch_size):
-                   self.calculate_deltas2(labels[count])
-                   self.update_gradient()
-                   count+=1
-            old_dict = self.parameter_dict
-            self.update_weights()
-            for k in range(len(self.Nodes)-2):
-                if i == 0:
-                    weights = self.parameter_dict[0]['w']
-                else:
-
-                    weights = old_dict[k]['w'] + self.parameter_dict[i]['w']
-
-        weights = np.mean(weights, axis = 0)
-        return weights
-    def predict(self, test_data):
-        preds = []
-        for i in range(len(data)):
-            self.forward_propogate(test_data[i])
-            preds.append(self.parameter_dict['y_hat'])
-
-
-
-
-
-
-
-
-=======
-            self.parameter_dict[l]['g_bias'] += self.parameter_dict[l]['delta']
-            self.parameter_dict[l]['gradient'] += np.dot(self.parameter_dict[l - 1]['h'].T, 
+            self.parameter_dict[l]['g_bias'] += self.rate * self.parameter_dict[l]['delta']
+            self.parameter_dict[l]['gradient'] += self.rate * np.dot(self.parameter_dict[l - 1]['h'].T, 
                                                                      self.parameter_dict[l]['delta'])
->>>>>>> 88de399a0555f046f1535b08fa0f02fe64d3722e
 
     def walk_gradient(self):
         for l in range(len(self.Nodes) - 1, 0, -1):
-            self.parameter_dict[l]['bias'] -= self.rate * self.parameter_dict[l]['g_bias']
+            self.parameter_dict[l]['bias'] -= self.parameter_dict[l]['g_bias']
             self.parameter_dict[l]['g_bias'] = 0 * self.parameter_dict[l]['g_bias']
             
-            self.parameter_dict[l]['w'] -= self.rate * self.parameter_dict[l]['gradient']
+            self.parameter_dict[l]['w'] -= self.parameter_dict[l]['gradient']
             self.parameter_dict[l]['gradient'] = 0 * self.parameter_dict[l]['gradient']
             
     def train(self,data,y,batch_size = 100, epochs = 8):
@@ -217,6 +132,7 @@ class NeuralNetwork:
             idx = i % len(data)
             
             if i % batch_size == 0 and i != 0:
+                print(i / (epochs * len(data)))
                 self.walk_gradient()
                 
             self.forward_propogate(data[idx,:])
