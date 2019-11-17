@@ -30,6 +30,7 @@ def grid_search(Nodes,Activations, data, labels,batch_sizes = [100], epochs = [6
 			pred = net.predict(data_testing)
 			mse = mean_squared_error(labels_testing,pred)
 			results.append({'mse': mse,'Nodes': Nodes[i], 'Activations': Activations[i], 'batch_size': batch_sizes[0], 'epochs': epochs[0], 'split': split})
+			print(results)
 		else:
 			for j in batch_sizes:
 				for k in epochs:
@@ -41,4 +42,4 @@ def grid_search(Nodes,Activations, data, labels,batch_sizes = [100], epochs = [6
 
 Node_list = [[39,40,1],[39,50,50,1],[39,256,128,64,1],[39,512,256,128,64,32,1]]
 activations = [['relu'] * len(i) for i in Node_list]
-#print(grid_search([]))
+print(grid_search(Node_list,activations,data,labels))

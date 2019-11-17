@@ -77,11 +77,11 @@ class NeuralNetwork:
         for i in range(1,len(self.Nodes)-1):
             #new z value calculated by multiplying node weights and adding bias 
             kwargs={'activation':self.parameter_dict[i]['activation']}
-            newz = np.matrix(np.matmul(self.parameter_dict[i-1]['h'],self.parameter_dict[i]['w'])) + self.parameter_dict[i]['bias']
+            newz = np.matrix(np.dot(self.parameter_dict[i-1]['h'],self.parameter_dict[i]['w'])) + self.parameter_dict[i]['bias']
             newh = np.matrix(np.apply_along_axis(self.activate,0,newz, **kwargs))
             self.parameter_dict[i]['z'] = newz
             self.parameter_dict[i]['h'] = newh
-        self.parameter_dict['y_hat'] = np.asscalar(np.matmul(self.parameter_dict[len(self.Nodes)-2]['h'],
+        self.parameter_dict['y_hat'] = np.asscalar(np.dot(self.parameter_dict[len(self.Nodes)-2]['h'],
                                                              self.parameter_dict[len(self.Nodes)-1]['w']))
 
 
@@ -111,8 +111,8 @@ class NeuralNetwork:
             kwargs={'activation':self.parameter_dict[i]['activation']}
             g_prime_layer = np.apply_along_axis(self.activate_prime,0,self.parameter_dict[i]["z"], **kwargs)
 
-            self.parameter_dict[i]["delta"] = np.matmul(self.parameter_dict[i + 1]["delta"],
-                                                        np.matmul(self.parameter_dict[i + 1]["w"].T,
+            self.parameter_dict[i]["delta"] = np.dot(self.parameter_dict[i + 1]["delta"],
+                                                        np.dot(self.parameter_dict[i + 1]["w"].T,
                                                                   np.matrix(np.diag(g_prime_layer))))
          
     def update_gradient(self):
@@ -145,7 +145,7 @@ class NeuralNetwork:
     
     def predict(self, test_data):
         preds = []
-        for i in range(len(test_data)):
+        for i in range(len(test_data)-1):
             self.forward_propogate(test_data[i])
             preds.append(self.parameter_dict['y_hat'])
         return preds
