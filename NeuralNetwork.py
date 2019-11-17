@@ -69,13 +69,16 @@ class NeuralNetwork:
             if z > 0:
                 return 1
             return 0
+        if activation == 'sigmoid':
+            return (1/(1+np.e** -z)) * (1 - (1/(1+np.e** -z)))
         
     def forward_propogate(self,data):
         self.parameter_dict[0]['h'] = np.matrix(data)
         for i in range(1,len(self.Nodes)-1):
             #new z value calculated by multiplying node weights and adding bias 
+            kwargs={'activation':self.parameter_dict[i]['activation']}
             newz = np.matrix(np.matmul(self.parameter_dict[i-1]['h'],self.parameter_dict[i]['w'])) + self.parameter_dict[i]['bias']
-            newh = np.matrix(np.apply_along_axis(self.activate,0,newz))
+            newh = np.matrix(np.apply_along_axis(self.activate,0,newz, **kwargs))
             self.parameter_dict[i]['z'] = newz
             self.parameter_dict[i]['h'] = newh
         self.parameter_dict['y_hat'] = np.asscalar(np.matmul(self.parameter_dict[len(self.Nodes)-2]['h'],
@@ -105,7 +108,8 @@ class NeuralNetwork:
             # extra Ts are just making things into column vectors
             # add the intercept into g_prime
             #print(i)
-            g_prime_layer = np.apply_along_axis(self.activate_prime,0,self.parameter_dict[i]["z"])
+            kwargs={'activation':self.parameter_dict[i]['activation']}
+            g_prime_layer = np.apply_along_axis(self.activate_prime,0,self.parameter_dict[i]["z"], **kwargs)
 
             self.parameter_dict[i]["delta"] = np.matmul(self.parameter_dict[i + 1]["delta"],
                                                         np.matmul(self.parameter_dict[i + 1]["w"].T,
