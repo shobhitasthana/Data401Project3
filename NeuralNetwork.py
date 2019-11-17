@@ -62,7 +62,7 @@ class NeuralNetwork:
             else:
                 return 0
         if activation == 'sigmoid':
-            return (1/(1+np.e** -z))
+            return (1/(1+np.exp(-z)))
         
     def activate_prime(self, z, activation='relu'):
         if activation == 'relu':
@@ -70,7 +70,7 @@ class NeuralNetwork:
                 return 1
             return 0
         if activation == 'sigmoid':
-            return (1/(1+np.e** -z)) * (1 - (1/(1+np.e** -z)))
+            return (1/(1+np.exp(-z))) * (1 - (1/(1+np.exp(-z))))
         
     def forward_propogate(self,data):
         self.parameter_dict[0]['h'] = np.matrix(data)
@@ -109,7 +109,7 @@ class NeuralNetwork:
             # add the intercept into g_prime
             #print(i)
             kwargs={'activation':self.parameter_dict[i]['activation']}
-            g_prime_layer = np.apply_along_axis(self.activate_prime,0,self.parameter_dict[i]["z"], **kwargs)
+            g_prime_layer = np.asarray(np.apply_along_axis(self.activate_prime,0,self.parameter_dict[i]["z"], **kwargs)).flatten()
 
             self.parameter_dict[i]["delta"] = np.dot(self.parameter_dict[i + 1]["delta"],
                                                         np.dot(self.parameter_dict[i + 1]["w"].T,
