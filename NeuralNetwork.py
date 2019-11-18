@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np 
+from sklearn.metrics import mean_squared_error
 
 
 class NeuralNetwork:
@@ -15,20 +16,19 @@ class NeuralNetwork:
     Activations: an array of size [0,..,Layers+1] (for the sake of compatibility) in which Activations[0] and Activations[Layers+1] are not used, while all other Activations[i] values are labels indicating the activation function used in layer i. 
     This allows you to build neural networks with different activation functions in each layer.
     """
-    def __init__(self,Nodes,Activations):
-
-
+    def __init__(self,Nodes,Activations, rate=0.01):
 
         self.Layers = len(Nodes) - 2
         self.Nodes = Nodes
         self.Activations = Activations
         self.parameter_dict ={}
-        self.rate = 0.01
+        self.rate = rate
+        self.epoch_MSE = []
 
     def initialize_net(self):
         '''
         parameter dict format:
-        layer: {w,h,z,delta, activation}
+        layer: {w, h, z, bias, delta, activation, gradient, g_bias}
         '''
         parameter_dict = {k: {'w':0, 'h':0, 'z':0, 'bias':0,
                               'delta':0, 'activation':0, 'gradient':0, 'g_bias':0} 
@@ -129,18 +129,27 @@ class NeuralNetwork:
             self.parameter_dict[l]['w'] -= self.parameter_dict[l]['gradient']
             self.parameter_dict[l]['gradient'] = 0 * self.parameter_dict[l]['gradient']
             
-    def train(self,data,y,batch_size = 100, epochs = 8):
-
+    def train(self, data, y, batch_size = 100, epochs = 8):
         self.initialize_net()
+        indices = np.arange(len(data))
+        np.random.shuffle(indices)
+        
         for i in range(epochs * len(data)):
             idx = i % len(data)
             
-            if i % batch_size == 0 and i != 0:
+            # one epoch completed
+            if i % len(data) == 0 and i != 0:
+                self.walk_gradient()
+                np.random.shuffle(indices)
+                y_pred = self.predict(data)
+                self.epoch_MSE.append(mean_squared_error(y, y_pred))
+            # one batch completed
+            elif i % batch_size == 0 and i != 0:
                 print(i / (epochs * len(data)))
                 self.walk_gradient()
                 
-            self.forward_propogate(data[idx,:])
-            self.calculate_deltas(y[idx])
+            self.forward_propogate(data[indices[idx],:])
+            self.calculate_deltas(y[indices[idx]])
             self.update_gradient()
     
     def predict(self, test_data):
