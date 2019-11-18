@@ -3,6 +3,8 @@ import numpy as np
 from NeuralNetwork import *
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import r2_score
+from keras import layers
+from keras import models
 
 # net = NeuralNetwork([39,256,128,64,32,1],['relu']*6)
 # #rint(['relu']*6)
@@ -10,6 +12,7 @@ from sklearn.metrics import r2_score
 data = pd.read_csv('final_NN_feat (1).csv')
 #print(data.sample(frac = 1))
 data = data.sample(frac = 1)
+data = data.sample(frac =1)
 
 labels = data['target'].reset_index()
 data = data.drop(['target','timestamp'], axis = 1)
@@ -27,6 +30,26 @@ labels = labels.iloc[:,1:].to_numpy()
 print(sum(data == np.nan))
 print(labels)
 
+model = models.Sequential()
+model.add(layers.Dense(35,activation='relu',input_shape=(35,)))
+model.add(layers.Dense(20,activation='relu'))
+model.add(layers.Dropout(.25))
+model.add(layers.Dense(20,activation='relu'))
+#model.add(layers.Dropout(.25))
+model.add(layers.Dense(10,activation='relu'))
+#model.add(layers.Dropout(.25))
+#model.add(layers.Dense(8,activation='relu'))
+model.add(layers.Dense(1,activation ='relu'))
+
+model.compile(optimizer = 'rmsprop',loss = 'mean_squared_error', metrics = ['mse'])
+split = 0.8
+data_training, data_testing = data[:int(len(data)*split)], data[int(len(data)*split):]
+labels_training, labels_testing = labels[:int(len(data)*split)], labels[int(len(data)*split):]
+
+model.fit(data_training,labels_training, batch_size = 100, epochs = 8)
+pred = model.predict(data_testing)
+print(r2_score(labels_testing,pred))
+print(model.evaluate(data_testing,labels_testing))
 # #print(labels.iloc[:,1:].to_numpy())
 
 # net.train(data,labels)
@@ -34,7 +57,7 @@ print(labels)
 #grid search reads in 2-d array of Nodes and Activations
 #reads in array of batch_sizes and epochs
 #data and labels
-
+'''
 def grid_search(Nodes,Activations, data, labels,batch_sizes = [300], epochs = [8], split = 0.66):
 	data_training, data_testing = data[:int(len(data)*split)], data[int(len(data)*split):]
 	labels_training, labels_testing = labels[:int(len(data)*split)], labels[int(len(data)*split):]
@@ -62,3 +85,4 @@ def grid_search(Nodes,Activations, data, labels,batch_sizes = [300], epochs = [8
 Node_list = [[35,40,1],[35,50,50,1],[35,256,128,64,1],[35,512,256,128,64,32,1]]
 activations = [['relu'] * len(i) for i in Node_list]
 print(grid_search(Node_list,activations,data,labels))
+'''
