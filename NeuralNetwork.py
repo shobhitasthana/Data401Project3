@@ -23,7 +23,7 @@ class NeuralNetwork:
         self.Nodes = Nodes
         self.Activations = Activations
         self.parameter_dict ={}
-        self.rate = 0.001
+        self.rate = 0.01
 
     def initialize_net(self):
         '''
@@ -145,7 +145,7 @@ class NeuralNetwork:
     
     def predict(self, test_data):
         preds = []
-        for i in range(len(test_data)-1):
+        for i in range(len(test_data)):
             self.forward_propogate(test_data[i])
             preds.append(self.parameter_dict['y_hat'])
         return preds
