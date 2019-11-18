@@ -45,7 +45,8 @@ class NeuralNetwork:
             g_bias = np.matrix(np.zeros(self.Nodes[i]), dtype='float64')
 
             activation = self.Activations[i-1]
-
+            if activation == 'relu':
+                w = w * np.sqrt(2/self.Nodes[i-1])
             parameter_dict[i] = {'w':w, 'h':h, 'z':z, 'bias':bias, 
                                  'delta':delta, 'activation':activation, 
                                  'gradient':gradient, 'g_bias':g_bias}
