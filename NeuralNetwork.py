@@ -36,13 +36,13 @@ class NeuralNetwork:
         
         for i in range(1,len(self.Nodes)):
             
-            h = np.matrix(np.random.randn(self.Nodes[i]), dtype='float64')
-            w = np.matrix(np.random.randn((self.Nodes[i-1]),(self.Nodes[i])), dtype='float64')
-            z = np.matrix(np.zeros(self.Nodes[i]), dtype='float64')
-            bias = np.matrix(np.random.randn(self.Nodes[i]), dtype='float64')
-            delta = np.matrix(np.random.randn(self.Nodes[i]), dtype='float64')
-            gradient = np.matrix(np.zeros((self.Nodes[i-1],self.Nodes[i])), dtype='float64')
-            g_bias = np.matrix(np.zeros(self.Nodes[i]), dtype='float64')
+            h = np.matrix(np.random.randn(self.Nodes[i]), dtype='float128')
+            w = np.matrix(np.random.randn((self.Nodes[i-1]),(self.Nodes[i])), dtype='float128')
+            z = np.matrix(np.zeros(self.Nodes[i]), dtype='float128')
+            bias = np.matrix(np.random.randn(self.Nodes[i]), dtype='float128')
+            delta = np.matrix(np.random.randn(self.Nodes[i]), dtype='float128')
+            gradient = np.matrix(np.zeros((self.Nodes[i-1],self.Nodes[i])), dtype='float128')
+            g_bias = np.matrix(np.zeros(self.Nodes[i]), dtype='float128')
 
             activation = self.Activations[i-1]
             if activation == 'relu':

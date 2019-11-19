@@ -5,30 +5,54 @@ from sklearn.metrics import mean_squared_error
 from sklearn.metrics import r2_score
 from keras import layers
 from keras import models
-
-# net = NeuralNetwork([39,256,128,64,32,1],['relu']*6)
-# #rint(['relu']*6)
+from sklearn import preprocessing
+from sklearn.model_selection import train_test_split
 
 data = pd.read_csv('final_NN_feat (1).csv')
-#print(data.sample(frac = 1))
-data = data.sample(frac = 1)
-data = data.sample(frac =1)
+target = data["target"]
+data = data.drop(['timestamp',"target",'Unnamed: 0'], axis = 1)
 
-labels = data['target'].reset_index()
-data = data.drop(['target','timestamp'], axis = 1)
-print(data.shape)
-data = data.iloc[:,1:].to_numpy()
+# training and test split
 
-#data =(data -np.mean(data,axis = 0))/np.std(data,axis =0)
-print(data.shape)
 
-#labels = (labels - np.mean(labels,axis =0))/np.std(labels, axis =0)
+def grid_search(data, target, Nodes, activation, batch_sizes, rates):
+    X_train, X_test, y_train, y_test = train_test_split(data
+                                                        , target, test_size=0.33, random_state=42)
 
-#labels = pd.read_csv('training_labels.csv')
-labels = labels.iloc[:,1:].to_numpy()
+    scalerX = preprocessing.StandardScaler().fit(X_train)
+    scalery = preprocessing.StandardScaler().fit(np.array(y_train).reshape(-1, 1))
+    X_train = scalerX.transform(X_train)
+    X_test = scalerX.transform(X_test)
+    y_train = scalery.transform(np.array(y_train).reshape(-1, 1))
+    y_test = scalery.transform(np.array(y_test).reshape(-1, 1))
+    
+    results = []
+    #nodes = [35, 15, 1]
+    
+    for n in Nodes:
+        print(n)
+        activations = [activation] * len(n)
+        print(activations)
+        for rate in rates:
+            net = NeuralNetwork(n,activations, rate)
 
-print(sum(data == np.nan))
-print(labels)
+            for batch in batch_sizes:
+                net.train(X_train,y_train,batch_size = batch, epoch_MSE = False)
+                pred = net.predict(X_test)
+                mse = mean_squared_error(y_test,pred)
+                r2 = r2_score(y_test,pred)
+                results.append({'r2': r2,'mse': mse, 'Nodes': n,'activation':activation, 'batch_size': batch, 'learning_rate': rate})
+                print(results)
+    return results
+
+Node_list = [[35,15,1],[35,20,20,10,1],[35,50,50,1],[35,256,128,64,1],[35,512,256,128,64,32,1]]
+
+#activations = [['relu'] * len(i) for i in Node_list]
+print(grid_search(data,target, Node_list,'sigmoid',[10,25,100,200],[0.1,0.01,0.001]))
+
+
+'''
+Keras implementation for comparison
 
 model = models.Sequential()
 model.add(layers.Dense(35,activation='relu',input_shape=(35,)))
@@ -50,39 +74,4 @@ model.fit(data_training,labels_training, batch_size = 100, epochs = 8)
 pred = model.predict(data_testing)
 print(r2_score(labels_testing,pred))
 print(model.evaluate(data_testing,labels_testing))
-# #print(labels.iloc[:,1:].to_numpy())
-
-# net.train(data,labels)
-
-#grid search reads in 2-d array of Nodes and Activations
-#reads in array of batch_sizes and epochs
-#data and labels
-'''
-def grid_search(Nodes,Activations, data, labels,batch_sizes = [300], epochs = [8], split = 0.66):
-	data_training, data_testing = data[:int(len(data)*split)], data[int(len(data)*split):]
-	labels_training, labels_testing = labels[:int(len(data)*split)], labels[int(len(data)*split):]
-	results = []
-	for i in range(len(Nodes)):
-		net = NeuralNetwork(Nodes[i],Activations[i])
-		if len(batch_sizes) ==1 and len(epochs) ==1:
-			net.train(data_training,labels_training, batch_size = batch_sizes[0], epochs = epochs[0])
-			pred = net.predict(data_testing)
-			mse = mean_squared_error(labels_testing,pred)
-			r2 = r2_score(labels_testing,pred)
-			results.append({'r2': r2,'mse': mse,'Nodes': Nodes[i], 'Activations': Activations[i], 'batch_size': batch_sizes[0], 'epochs': epochs[0], 'split': split})
-			print(results)
-		else:
-			for j in batch_sizes:
-				for k in epochs:
-					net.train(data_training,labels_training,batch_size = j, epochs = k)
-					pred = net.predict(data_testing)
-					mse = mean_squared_error(labels_testing,pred)
-					r2 = r2_score(labels_testing,pred)
-					results.append({'r2': r2,'mse': mse,'Nodes': Nodes[i], 'Activations': Activations[i], 'batch_size': batch_sizes[0], 'epochs': epochs[0], 'split': split})
-					print(results)
-	return results
-
-Node_list = [[35,40,1],[35,50,50,1],[35,256,128,64,1],[35,512,256,128,64,32,1]]
-activations = [['relu'] * len(i) for i in Node_list]
-print(grid_search(Node_list,activations,data,labels))
 '''
