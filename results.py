@@ -1,20 +1,17 @@
 import pandas as pd
 import numpy as np 
 from NeuralNetwork import *
-from sklearn.metrics import mean_squared_error
-from sklearn.metrics import r2_score
 from keras import layers
 from keras import models
 from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
+from sklearn.model_selection import KFold
+from sklearn.metrics import *
 
 data = pd.read_csv('final_NN_feat (1).csv')
 data = data.sample(frac = 1)
 target = data["target"]
 data = data.drop(['timestamp',"target",'Unnamed: 0'], axis = 1)
-
-# training and test split
-
 
 def grid_search(data, target, Nodes, activation, batch_sizes, rates):
     X_train, X_test, y_train, y_test = train_test_split(data
@@ -43,36 +40,65 @@ def grid_search(data, target, Nodes, activation, batch_sizes, rates):
                 mse = mean_squared_error(y_test,pred)
                 r2 = r2_score(y_test,pred)
                 results.append({'r2': r2,'mse': mse, 'Nodes': n,'activation':activation, 'batch_size': batch, 'learning_rate': rate})
-                print(results)
     return results
 
 Node_list = [[35,15,1],[35,20,20,10,1],[35,50,50,1],[35,256,128,64,1],[35,512,256,128,64,32,1]]
 
-#activations = [['relu'] * len(i) for i in Node_list]
-print(grid_search(data,target, Node_list,'sigmoid',[10,25,100,200],[0.01,0.001]))
+sigmoid_search = grid_search(data,target, Node_list,'sigmoid',[10,25,100,200],[0.01,0.001])
+relu_search  = grid_search(data,target, Node_list,'relu',[10,25,100,200],[0.01,0.001])
+best_sigmoid = sorted(sigmoid_search, key = lambda model: model['mse'])[0]
+best_relu = sorted(relu_search, key = lambda model: model['mse'])[0]
 
+print("Sigmoid Search:",sigmoid_search)
+print("Relu Search:",relu_search)
 
-'''
-Keras implementation for comparison
+print("Best Sigmoid:", best_sigmoid)
+print("Best ReLU:", best_relu)
 
-model = models.Sequential()
-model.add(layers.Dense(35,activation='relu',input_shape=(35,)))
-model.add(layers.Dense(20,activation='relu'))
-model.add(layers.Dropout(.25))
-model.add(layers.Dense(20,activation='relu'))
-#model.add(layers.Dropout(.25))
-model.add(layers.Dense(10,activation='relu'))
-#model.add(layers.Dropout(.25))
-#model.add(layers.Dense(8,activation='relu'))
-model.add(layers.Dense(1,activation ='relu'))
+cv = KFold(n_splits=5)
 
-model.compile(optimizer = 'rmsprop',loss = 'mean_squared_error', metrics = ['mse'])
-split = 0.8
-data_training, data_testing = data[:int(len(data)*split)], data[int(len(data)*split):]
-labels_training, labels_testing = labels[:int(len(data)*split)], labels[int(len(data)*split):]
+folds = cv.split(X=data)
+lr_MSE_results = []
+lr_r2_results = []
+nn_sig_MSE_results = []
+nn_sig_r2_results = []
+nn_relu_MSE_results = []
+nn_relu_r2_results = []
 
-model.fit(data_training,labels_training, batch_size = 100, epochs = 8)
-pred = model.predict(data_testing)
-print(r2_score(labels_testing,pred))
-print(model.evaluate(data_testing,labels_testing))
-'''
+for train_idx, test_idx in folds:
+    lr = LinearRegression()
+    X_train = data.iloc[train_idx,:]
+    X_test = data.iloc[test_idx,:]
+    y_train = target[train_idx]
+    y_test = target[test_idx]
+    
+    scalerX = preprocessing.StandardScaler().fit(X_train)
+    scalery = preprocessing.StandardScaler().fit(np.array(y_train).reshape(-1, 1))
+    X_train = scalerX.transform(X_train)
+    X_test = scalerX.transform(X_test)
+    y_train = scalery.transform(np.array(y_train).reshape(-1, 1))
+    y_test = scalery.transform(np.array(y_test).reshape(-1, 1))
+    
+    lr.fit(X_train,y_train)
+    y_pred = lr.predict(X_test)
+    lr_MSE_results.append(mean_squared_error(y_test, y_pred))
+    lr_r2_results.append(r2_score(y_test,y_pred))
+    
+    net_sig = NeuralNetwork(best_sigmoid['Nodes'],['sigmoid']*5, rate=best_sigmoid['learning_rate'])
+    net_sig.train(X_train, y_train, batch_size=best_sigmoid['batch_size'], epoch_MSE=False)
+    y_pred_nn_sig = net_sig.predict(X_test)
+    nn_sig_MSE_results.append(mean_squared_error(y_test, y_pred_nn_sig))
+    nn_sig_r2_results.append(r2_score(y_test,y_pred_nn_sig))
+    
+    net_relu = NeuralNetwork(best_relu['Nodes'],['relu']*5, rate=best_relu['learning_rate'])
+    net_relu.train(X_train, y_train, batch_size=best_relu['batch_size'], epoch_MSE=False)
+    y_pred_nn_relu = net_relu.predict(X_test)
+    nn_relu_MSE_results.append(mean_squared_error(y_test, y_pred_nn_relu))
+    nn_relu_r2_results.append(r2_score(y_test,y_pred_nn_relu))
+                          
+print("Regression Results:")
+print("MSE:", lr_MSE_results.mean(), "R2:", lr_r2_results.mean())
+print("Neural Network (Sigmoid Activation) Results:")
+print("MSE:", nn_sig_MSE_results.mean(), "R2:", nn_sig_r2_results.mean())
+print("Neural Network (ReLU Activation) Results:")
+print("MSE:", nn_relu_MSE_results.mean(), "R2:", nn_relu_r2_results.mean())
