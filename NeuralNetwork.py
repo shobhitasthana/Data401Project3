@@ -130,7 +130,7 @@ class NeuralNetwork:
             self.parameter_dict[l]['w'] -= self.parameter_dict[l]['gradient']
             self.parameter_dict[l]['gradient'] = 0 * self.parameter_dict[l]['gradient']
             
-    def train(self, data, y, batch_size = 100, epochs = 8):
+    def train(self, data, y, batch_size = 100, epochs = 8, epoch_MSE=True):
         self.initialize_net()
         indices = np.arange(len(data))
         np.random.shuffle(indices)
@@ -138,15 +138,20 @@ class NeuralNetwork:
         for i in range(epochs * len(data)):
             idx = i % len(data)
             
+            if i % ((epochs * len(data)) // 20) == 0:
+                print(i / (epochs * len(data)))
+            
             # one epoch completed
             if i % len(data) == 0 and i != 0:
                 self.walk_gradient()
                 np.random.shuffle(indices)
-                y_pred = self.predict(data)
-                self.epoch_MSE.append(mean_squared_error(y, y_pred))
+                if epoch_MSE:
+                    y_pred = self.predict(data)
+                    mse = mean_squared_error(y, y_pred)
+                    self.epoch_MSE.append(mse)
+                    print("Epoch ", i // len(data), "MSE:", mse)
             # one batch completed
             elif i % batch_size == 0 and i != 0:
-                print(i / (epochs * len(data)))
                 self.walk_gradient()
                 
             self.forward_propogate(data[indices[idx],:])
