@@ -9,6 +9,7 @@ from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
 
 data = pd.read_csv('final_NN_feat (1).csv')
+data = data.sample(frac = 1)
 target = data["target"]
 data = data.drop(['timestamp',"target",'Unnamed: 0'], axis = 1)
 
@@ -48,7 +49,7 @@ def grid_search(data, target, Nodes, activation, batch_sizes, rates):
 Node_list = [[35,15,1],[35,20,20,10,1],[35,50,50,1],[35,256,128,64,1],[35,512,256,128,64,32,1]]
 
 #activations = [['relu'] * len(i) for i in Node_list]
-print(grid_search(data,target, Node_list,'sigmoid',[10,25,100,200],[0.1,0.01,0.001]))
+print(grid_search(data,target, Node_list,'sigmoid',[10,25,100,200],[0.01,0.001]))
 
 
 '''
